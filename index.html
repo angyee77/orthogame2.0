@@ -2,109 +2,120 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrthoSlot: Mirror Challenge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OrthoSlot Mobile</title>
     <style>
         :root {
             --niti: #7f8c8d; --ss: #ecf0f1; --tma: #b8a05e;
             --gum: #e5989b; --tooth: #fdfcf0;
         }
 
+        * { box-sizing: border-box; touch-action: none; } /* Prevents accidental zooming/scrolling */
+
         body {
-            margin: 0; background: #1a1a1a; color: white;
-            font-family: 'Arial', sans-serif; overflow: hidden;
-            display: flex; justify-content: center; align-items: center; height: 100vh;
+            margin: 0; padding: 0; background: #000;
+            color: white; font-family: sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; width: 100vw; overflow: hidden;
         }
 
+        /* Responsive Game Container */
         #game-viewport {
-            position: relative; width: 900px; height: 600px;
-            background: #4a332d; border: 8px solid #333;
-            border-radius: 20px; overflow: hidden; cursor: none;
+            position: relative;
+            width: 100vw;
+            height: 56.25vw; /* 16:9 Aspect Ratio */
+            max-height: 100vh;
+            max-width: 177.78vh; /* Prevents overflow on tall screens */
+            background: #4a332d;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
         /* --- THE SURGERY SETTING --- */
         .cheek-overlay {
             position: absolute; inset: 0;
-            background: radial-gradient(circle at 70% 50%, transparent 20%, #6d4c41 60%);
+            background: radial-gradient(circle at 75% 50%, transparent 15%, #6d4c41 70%);
             pointer-events: none; z-index: 5;
         }
 
         .mouth-mirror {
-            position: absolute; left: 150px; top: 150px;
-            width: 180px; height: 180px;
-            border: 10px solid #95a5a6; border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.5);
+            position: absolute; left: 5%; top: 20%;
+            width: 25%; height: 45%;
+            border: 6px solid #95a5a6; border-radius: 50%;
+            background: rgba(255,255,255,0.05);
             z-index: 4;
         }
 
-        /* --- FOGGING EFFECT --- */
         #fog {
             position: absolute; inset: 0;
             background: white; opacity: 0;
             pointer-events: none; z-index: 15;
-            animation: breathFog 6s infinite ease-in-out;
+            animation: breathFog 7s infinite ease-in-out;
         }
 
         @keyframes breathFog {
             0%, 100% { opacity: 0; }
-            40%, 60% { opacity: 0.7; filter: blur(8px); }
+            45%, 55% { opacity: 0.75; filter: blur(10px); }
         }
 
-        /* --- TEETH & BRACKETS --- */
+        /* --- TEETH ARCH --- */
         #arch {
-            position: absolute; right: 100px; top: 50%;
-            transform: translateY(-50%); display: flex; gap: 15px;
+            position: absolute; right: 10%; top: 50%;
+            transform: translateY(-50%);
+            display: flex; gap: 3%; width: 50%; justify-content: flex-end;
         }
 
         .tooth {
-            width: 70px; height: 90px; background: var(--tooth);
-            border-radius: 5px 5px 30px 30px; position: relative;
-            box-shadow: inset -5px -10px 10px rgba(0,0,0,0.1);
+            width: 20%; aspect-ratio: 1/1.4; background: var(--tooth);
+            border-radius: 5px 5px 40% 40%; position: relative;
         }
 
         .tube {
-            position: absolute; top: 30px; left: 10px;
-            width: 50px; height: 25px; background: #7f8c8d;
+            position: absolute; top: 25%; left: 10%;
+            width: 80%; height: 25%; background: #7f8c8d;
             border: 1px solid #333; display: flex; 
             justify-content: center; align-items: center;
         }
 
-        .slot { background: #111; border: 1px solid #444; }
-        .slot.round { width: 12px; height: 12px; border-radius: 50%; }
-        .slot.rect { width: 30px; height: 10px; }
+        .slot { background: #111; }
+        .slot.round { width: 30%; aspect-ratio: 1/1; border-radius: 50%; }
+        .slot.rect { width: 70%; height: 40%; }
 
-        /* --- UI & TOOLS --- */
+        /* --- MOBILE UI --- */
         .tray {
-            position: absolute; left: 20px; top: 20px;
-            z-index: 20; display: flex; flex-direction: column; gap: 10px;
+            position: absolute; left: 3%; bottom: 5%;
+            z-index: 20; display: flex; gap: 10px;
         }
 
         .wire-btn {
-            padding: 15px; background: rgba(0,0,0,0.6); border: 1px solid #555;
-            cursor: pointer; text-align: center; width: 120px;
+            padding: 10px; background: rgba(0,0,0,0.7); border: 2px solid #555;
+            border-radius: 8px; font-size: 0.8rem; min-width: 80px; text-align: center;
         }
 
-        .wire-btn:hover { background: #333; }
-        .wire-btn.selected { border-color: #3498db; box-shadow: 0 0 10px #3498db; }
+        .wire-btn.selected { border-color: #3498db; color: #3498db; }
 
-        /* --- THE PLIERS (CURSOR) --- */
+        /* --- THE TOOL (UNDER FINGER) --- */
         #pliers {
-            position: absolute; width: 120px; pointer-events: none; z-index: 100;
+            position: absolute; width: 80px; pointer-events: none; z-index: 100;
+            display: none;
         }
 
         .held-wire {
-            position: absolute; top: 15px; left: -80px;
-            transform-origin: right center;
+            position: absolute; top: 10px; left: -60px;
+            width: 60px; height: 4px; transform-origin: right center;
         }
 
-        .niti-anim { height: 3px; width: 80px; background: var(--niti); animation: vibrate 0.1s infinite; }
-        .ss-style { height: 8px; width: 80px; background: var(--ss); }
-        .tma-style { height: 6px; width: 80px; background: var(--tma); transform: rotate(-3deg); }
+        .niti-anim { background: var(--niti); animation: vibrate 0.1s infinite; }
+        .ss-style { background: var(--ss); height: 8px; top: 8px; }
+        .tma-style { background: var(--tma); height: 6px; transform: rotate(-4deg); }
 
-        @keyframes vibrate { 0% { transform: translateY(0); } 50% { transform: translateY(1px); } 100% { transform: translateY(0); } }
+        @keyframes vibrate { 0% { transform: scaleY(1); } 50% { transform: scaleY(1.4); } }
 
-        #msg { position: absolute; bottom: 50px; width: 100%; text-align: center; font-size: 24px; z-index: 30; }
+        #msg { 
+            position: absolute; top: 5%; width: 100%; 
+            text-align: center; font-size: 1.2rem; z-index: 30; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,1);
+        }
     </style>
 </head>
 <body>
@@ -115,25 +126,25 @@
     <div class="mouth-mirror"></div>
 
     <div class="tray">
-        <div class="wire-btn" onclick="pickWire('niti', this)">Round NiTi</div>
-        <div class="wire-btn" onclick="pickWire('ss', this)">Rect. SS</div>
-        <div class="wire-btn" onclick="pickWire('tma', this)">Rect. TMA</div>
+        <div class="wire-btn" id="btn-niti" onclick="pickWire('niti')">NiTi</div>
+        <div class="wire-btn" id="btn-tma" onclick="pickWire('tma')">TMA</div>
+        <div class="wire-btn" id="btn-ss" onclick="pickWire('ss')">SS</div>
     </div>
 
     <div id="arch">
         <div class="tooth"><div class="tube" data-type="niti"><div class="slot round"></div></div></div>
         <div class="tooth"><div class="tube" data-type="tma"><div class="slot rect"></div></div></div>
-        <div class="tooth"><div class="tube" data-type="ss"><div class="slot rect" style="height:14px"></div></div></div>
+        <div class="tooth"><div class="tube" data-type="ss"><div class="slot rect" style="height:60%"></div></div></div>
     </div>
 
     <div id="pliers">
-        <svg viewBox="0 0 100 40" width="120">
-            <path d="M100,20 L40,10 L30,20 L40,30 Z" fill="#bdc3c7" stroke="#7f8c8d"/>
+        <svg viewBox="0 0 100 40" width="80">
+            <path d="M100,20 L40,10 L30,20 L40,30 Z" fill="#bdc3c7" />
         </svg>
         <div id="wire-visual" class="held-wire"></div>
     </div>
 
-    <div id="msg">Select a wire and drag it into the correct tube...</div>
+    <div id="msg">PICK A WIRE</div>
 </div>
 
 <script>
@@ -141,64 +152,42 @@
     const pliers = document.getElementById('pliers');
     const wireVisual = document.getElementById('wire-visual');
     const msg = document.getElementById('msg');
+    const viewport = document.getElementById('game-viewport');
 
-    function pickWire(type, el) {
+    function pickWire(type) {
         activeWire = type;
         document.querySelectorAll('.wire-btn').forEach(b => b.classList.remove('selected'));
-        el.classList.add('selected');
+        document.getElementById('btn-' + type).classList.add('selected');
         
+        pliers.style.display = 'block';
         wireVisual.className = 'held-wire ' + 
             (type === 'niti' ? 'niti-anim' : type === 'ss' ? 'ss-style' : 'tma-style');
-        msg.innerText = "Carefully align the tip of the wire with the tube.";
+        msg.innerText = "DRAG TO TUBE";
     }
 
-    document.addEventListener('mousemove', (e) => {
-        const rect = document.getElementById('game-viewport').getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    function handleMove(e) {
+        if (!activeWire) return;
         
-        pliers.style.left = x + 'px';
-        pliers.style.top = y + 'px';
+        // Get touch or mouse position relative to viewport
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const rect = viewport.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        
+        // Offset pliers so they appear slightly above the finger/cursor for visibility
+        pliers.style.left = (x) + 'px';
+        pliers.style.top = (y - 40) + 'px';
 
-        if (activeWire) {
-            checkCollision(x - 80, y + 15); // Adjust for wire tip position
-        }
-    });
+        checkCollision(clientX, clientY);
+    }
 
-    function checkCollision(wireX, wireY) {
+    function checkCollision(cX, cY) {
         const tubes = document.querySelectorAll('.tube');
+        let found = false;
+        
         tubes.forEach(tube => {
             const r = tube.getBoundingClientRect();
-            const vRect = document.getElementById('game-viewport').getBoundingClientRect();
-            
-            // Checking if the wire tip is inside the tube area
-            if (wireX + vRect.left > r.left && wireX + vRect.left < r.right &&
-                wireY + vRect.top > r.top && wireY + vRect.top < r.bottom) {
-                
-                if (tube.getAttribute('data-type') === activeWire) {
-                    msg.style.color = "#2ecc71";
-                    msg.innerText = "MATCH FOUND! Release to Slot.";
-                    tube.style.boxShadow = "0 0 15px #2ecc71";
-                } else {
-                    msg.style.color = "#e74c3c";
-                    msg.innerText = "SIZE MISMATCH!";
-                }
-            } else {
-                tube.style.boxShadow = "none";
-            }
-        });
-    }
-
-    // Drop logic
-    document.addEventListener('mouseup', () => {
-        const highlighted = document.querySelector('.tube[style*="box-shadow"]');
-        if (highlighted && activeWire === highlighted.getAttribute('data-type')) {
-            msg.innerText = "SUCCESS! Wire Seated.";
-            activeWire = null;
-            wireVisual.className = 'held-wire';
-            highlighted.style.background = "#2ecc71";
-        }
-    });
-</script>
-</body>
-</html>
+            // Check if finger/wire tip is over the tube
+            if (cX > r.left && cX < r.right && cY > r.top && cY < r.bottom)
